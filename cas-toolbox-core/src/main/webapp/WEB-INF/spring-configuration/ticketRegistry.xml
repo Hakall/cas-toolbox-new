@@ -29,11 +29,11 @@
     </description>
        
   <!-- Ticket Registry -->
-  <bean id="ticketRegistry" class="org.jasig.cas.ticket.registry.DefaultTicketRegistry" />
+  <!-- <bean id="ticketRegistry" class="org.jasig.cas.ticket.registry.DefaultTicketRegistry" /> -->
 	
 	<!--Quartz -->
 	<!-- TICKET REGISTRY CLEANER -->
-	<bean id="ticketRegistryCleaner" class="org.jasig.cas.ticket.registry.support.DefaultTicketRegistryCleaner"
+	<!-- <bean id="ticketRegistryCleaner" class="org.jasig.cas.ticket.registry.support.DefaultTicketRegistryCleaner"
 		p:ticketRegistry-ref="ticketRegistry"
 		p:logoutManager-ref="logoutManager" />
 	
@@ -44,11 +44,11 @@
 	<bean id="triggerJobDetailTicketRegistryCleaner" class="org.springframework.scheduling.quartz.SimpleTriggerBean"
 		p:jobDetail-ref="jobDetailTicketRegistryCleaner"
 		p:startDelay="20000"
-		p:repeatInterval="5000000" />
+		p:repeatInterval="5000000" /> -->
 
 	<!--  IF USE ESUP memcache : start -->
 	<!-- Comment all others beans : ticketRegistry, ticketRegistryCleaner, jobDetailTicketRegistryCleaner and triggerJobDetailTicketRegistryCleaner --> 
-<!--	<bean id="ticketRegistry" class="org.jasig.cas.ticket.registry.MemCacheTicketRegistry">
+	<bean id="ticketRegistry" class="org.jasig.cas.ticket.registry.MemCacheTicketRegistry">
 		<constructor-arg index="0">
 			<list>
 				<value>${memcache.server}:${memcache.port}</value>
@@ -57,6 +57,6 @@
 		<constructor-arg index="1" type="int" value="${memcache.TGT.timeout}" />
 		<constructor-arg index="2" type="int" value="${memcache.ST.timeout}" />
 	</bean>
--->
+
 	<!--  IF USE ESUP memcache : stop -->
 </beans>

@@ -43,10 +43,10 @@
        </dependency>
 
        <!--  IF USE ESUP memcache : start -->
-       <!-- dependency>
+       <dependency>
            <groupId>org.jasig.cas</groupId>
            <artifactId>cas-server-integration-memcached</artifactId>
-       </dependency-->
+       </dependency>
        <!--  IF USE ESUP memcache : stop -->
 
        <!-- IF USE restful : start -->
