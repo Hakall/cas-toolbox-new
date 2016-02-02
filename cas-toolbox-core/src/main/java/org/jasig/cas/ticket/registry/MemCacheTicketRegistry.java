@@ -31,6 +31,13 @@ import org.jasig.cas.ticket.ServiceTicket;
 import org.jasig.cas.ticket.Ticket;
 import org.jasig.cas.ticket.TicketGrantingTicket;
 import org.springframework.beans.factory.DisposableBean;
+// tokemanager
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Key-value ticket registry implementation that stores tickets in memcached keyed on the ticket ID.
@@ -44,6 +51,9 @@ public final class MemCacheTicketRegistry extends AbstractDistributedTicketRegis
     /** Memcached client. */
     @NotNull
     private final MemcachedClientIF client;
+
+    /** memcached addresses **/
+    private final List<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();;
 
     /**
      * TGT cache entry timeout in seconds.
@@ -71,6 +81,11 @@ final int serviceTicketTimeOut) {
             this.client = new MemcachedClient(AddrUtil.getAddresses(Arrays.asList(hostnames)));
         } catch (final IOException e) {
             throw new IllegalArgumentException("Invalid memcached host specification.", e);
+        }
+
+        for(String hostname : hostnames){
+            String[] hostPort = hostname.split(":");
+            addresses.add(new InetSocketAddress(hostPort[0], Integer.parseInt(hostPort[1])));
         }
         this.tgtTimeout = ticketGrantingTicketTimeOut;
         this.stTimeout = serviceTicketTimeOut;
@@ -157,15 +172,52 @@ final int serviceTicketTimeOut) {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     * This operation is not supported.
-     *
-     * @throws UnsupportedOperationException if you try and call this operation.
-     */
     @Override
     public Collection<Ticket> getTickets() {
-        throw new UnsupportedOperationException("GetTickets not supported.");
+        return dumpCachedTGT();
+    }
+
+    /**
+     * Dump memcached TGT
+     *
+     */
+    public Collection<Ticket> dumpCachedTGT(){
+        List<Ticket> resTickets = new ArrayList<Ticket>();
+
+        Map<SocketAddress, Map<String, String>> stats = client.getStats("items");
+
+        for (int i = 0; i < addresses.size(); i++) {
+            InetSocketAddress address = addresses.get(i);
+            Map<String, String> items = stats.get(address);
+
+            for(String keyItems : items.keySet()) {
+                if(keyItems.endsWith(":number")) {
+                    String str[] = keyItems.split(":");
+                    
+                    // get bucket number
+                    String bucketNumber = str[1];
+                                        
+                    // get content of one bucket (items)
+                    Map<SocketAddress, Map<String, String>> details = client.getStats("cachedump " + bucketNumber + " 1000000");
+                    Map<String, String> tickets = details.get(address);
+
+                    for(String keyTickets : tickets.keySet()) {
+                        if(!keyTickets.startsWith("clearPass_")) {
+                            // get one ticket
+                            Ticket ticket = (Ticket) client.get(keyTickets);
+                                    
+                            if(ticket == null || !(ticket instanceof TicketGrantingTicket)) {
+                                continue;               
+                            }
+                            
+                            TicketGrantingTicket TGT = (TicketGrantingTicket) ticket;
+                            resTickets.add(ticket);    
+                        }
+                    }
+                }
+            }
+        }   
+        return resTickets;
     }
 
     public void destroy() throws Exception {
