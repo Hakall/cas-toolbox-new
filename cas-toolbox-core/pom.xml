@@ -76,7 +76,14 @@
         <groupId>com.fasterxml.jackson.core</groupId>   
         <artifactId>jackson-databind</artifactId>   
         <version>2.2.0</version>    
-      </dependency>   
+      </dependency>
+      <!-- IF USE ESUP memcache : start -->
+      <!--dependency>
+        <groupId>net.spy</groupId>
+        <artifactId>spymemcached</artifactId>
+        <version>2.11.7</version>
+      </dependency-->
+      <!-- IF USE ESUP memcache : stop -->   
       <!-- IF USE ESUP TokenManager : stop -->
       
        <!-- IF USE restful : stop -->
